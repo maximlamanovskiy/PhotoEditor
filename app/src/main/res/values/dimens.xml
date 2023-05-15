@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="editor_size">35dp</dimen>
+    <dimen name="normal_margin">8dp</dimen>
+    <dimen name="large_margin">16dp</dimen>
+
+    <dimen name="current_margin_1">16dp</dimen>
+    <dimen name="current_margin_2">21dp</dimen>
+    <dimen name="current_margin_3">36dp</dimen>
+    <dimen name="current_margin_4">42dp</dimen>
+    <dimen name="current_margin_5">56dp</dimen>
+    <dimen name="current_margin_6">64dp</dimen>
+    <dimen name="current_margin_7">72dp</dimen>
+    <dimen name="circular_cardview_radius">45dp</dimen>
+</resources>

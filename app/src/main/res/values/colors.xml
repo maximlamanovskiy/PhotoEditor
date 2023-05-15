@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+
+    <color name="colorPrimary">@color/white</color>
+    <color name="colorPrimaryDark">@color/white</color>
+    <color name="colorAccent">@color/black</color>
+
+    <color name="ucrop_color_widget_rotate_mid_line" tools:override="true">@color/black</color>
+    <color name="ucrop_color_widget_background" tools:override="true">@color/black</color>
+
+    <color name="blue_color_picker">#0066FF</color>
+    <color name="brown_color_picker">#AF593E</color>
+    <color name="green_color_picker">#01A368</color>
+    <color name="orange_color_picker">#FF861F</color>
+    <color name="red_color_picker">#ED0A3F</color>
+    <color name="red_orange_color_picker">#FF3F34</color>
+    <color name="sky_blue_color_picker">#76D7EA</color>
+    <color name="violet_color_picker">#8359A3</color>
+    <color name="yellow_color_picker">#FBE870</color>
+    <color name="yellow_green_color_picker">#C5E17A</color>
+    <color name="tool_bg">#151414</color>
+    <color name="skyblue">#009ee3</color>
+    <color name="lightblue">#87CEEB</color>
+    <color name="deepskyblue">#00BFFF</color>
+    <color name="dodgerblue">#1E90FF</color>
+    <color name="aurore">#ffcb60</color>
+    <color name="orange">#fbb03b</color>
+    <color name="darkorange">#f7931e</color>
+    <color name="deepgreen">#008577</color>
+    <color name="darkgreen">#00574B</color>
+    <color name="darkpink">#D81B60</color>
+    <color name="pink">#FF4081</color>
+    <color name="white">#ffffff</color>
+    <color name="silver">#dcdcdc</color>
+    <color name="dimgray">#696969</color>
+    <color name="gray">#808080</color>
+    <color name="darkgray">#A9A9A9</color>
+    <color name="outerSpace">#414A4C</color>
+    <color name="onyx">#353839</color>
+    <color name="eerieBlack">#1B1B1B</color>
+    <color name="xiketic">#0C020F</color>
+    <color name="black">#000000</color>
+    <color name="red">#FF0000</color>
+    <color name="yellow">#FFFF00</color>
+    <color name="goldenYellow">#FFD700</color>
+    <color name="goldenRod">#DAA520</color>
+    <color name="green">#008000</color>
+    <color name="limegreen">#32DC32</color>
+    <color name="lime">#00FF00</color>
+    <color name="ghostwhite">#F8F8FF</color>
+    <color name="whitesmoke">#F5F5F5</color>
+    <color name="etain">#DCDCDC</color>
+    <color name="blue">#0000CD</color>
+    <color name="transparent">#00000000</color>
+    <color name="transparentBlack">#90000000</color>
+    <color name="violet">#8359A3</color>
+    <color name="yellow_green">#C5E17A</color>
+    <color name="red_orange">#FF3F34</color>
+    <color name="brown">#AF593E</color>
+    <color name="indigo">#4b0082</color>
+</resources>

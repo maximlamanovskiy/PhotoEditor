@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".ui.activities.ImageSharingActivity">
+
+    <com.ortiz.touchview.TouchImageView
+        android:id="@+id/preview"
+        android:scaleType="fitCenter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/share_block"
+        tools:ignore="ContentDescription" />
+
+    <LinearLayout
+        android:id="@+id/share_block"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/whitesmoke"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/whatsapp"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_margin="@dimen/current_margin_2"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:cardCornerRadius="@dimen/circular_cardview_radius"
+                app:cardBackgroundColor="@color/white">
+
+                <ImageView
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_whatsapp_48dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:ignore="ContentDescription" />
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/facebook"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_margin="@dimen/current_margin_2"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:cardCornerRadius="@dimen/circular_cardview_radius"
+                app:cardBackgroundColor="@color/white">
+
+                <ImageView
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_facebook_48dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:ignore="ContentDescription" />
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/instagram"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_margin="@dimen/current_margin_2"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:cardCornerRadius="@dimen/circular_cardview_radius"
+                app:cardBackgroundColor="@color/white">
+
+                <ImageView
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_instagram_48dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:ignore="ContentDescription" />
+
+            </androidx.cardview.widget.CardView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/twitter"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_marginLeft="@dimen/current_margin_2"
+                android:layout_marginRight="@dimen/current_margin_2"
+                android:layout_marginBottom="@dimen/current_margin_2"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:cardCornerRadius="@dimen/circular_cardview_radius"
+                app:cardBackgroundColor="@color/white">
+
+                <ImageView
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_twitter_48dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:ignore="ContentDescription" />
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/snapchat"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_marginLeft="@dimen/current_margin_2"
+                android:layout_marginRight="@dimen/current_margin_2"
+                android:layout_marginBottom="@dimen/current_margin_2"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:cardCornerRadius="@dimen/circular_cardview_radius"
+                app:cardBackgroundColor="@color/white">
+
+                <ImageView
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_snapchat_48dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:ignore="ContentDescription" />
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/share"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_marginLeft="@dimen/current_margin_2"
+                android:layout_marginRight="@dimen/current_margin_2"
+                android:layout_marginBottom="@dimen/current_margin_2"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:cardCornerRadius="@dimen/circular_cardview_radius"
+                app:cardBackgroundColor="@color/white">
+
+                <ImageView
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_share_48dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:ignore="ContentDescription" />
+
+            </androidx.cardview.widget.CardView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
