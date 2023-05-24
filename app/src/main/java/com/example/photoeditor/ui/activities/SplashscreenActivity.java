@@ -17,7 +17,7 @@ public class SplashscreenActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        startActivityForResult(new Intent(this, MainActivity.class), REQUEST_CODE);
+        startActivityForResult(new Intent(this, AuthActivity.class), REQUEST_CODE);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
