@@ -346,7 +346,9 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
                     return fileRef.getDownloadUrl();
                 }).addOnCompleteListener((OnCompleteListener<Uri>) task -> {
                     if (task.isSuccessful()) {
-                        startActivity(new Intent(ImageEditorActivity.this, ImageSharingActivity.class).putExtra("path", task.getResult().getPath()));
+                        mPhotoEditorView.getSource().setImageBitmap(saveBitmap);
+                        hideLoading();
+                        startActivity(new Intent(ImageEditorActivity.this, ImageSharingActivity.class).putExtra("path", fileName));
                     } else {
                         hideLoading();
                         showSnackbar(getString(R.string.image_saving_failure));

@@ -1,6 +1,8 @@
 package com.example.photoeditor.ui.activities;
 
 
+import static com.example.photoeditor.core.classes.Constants.FINAL_PICTURE_DIRECTORY;
+
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
@@ -18,10 +20,19 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
+import com.bumptech.glide.Glide;
 import com.example.photoeditor.R;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.ortiz.touchview.TouchImageView;
 
 import java.io.File;
+import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -31,7 +42,9 @@ import butterknife.OnClick;
 public class ImageSharingActivity extends AppCompatActivity {
 
     private Uri uri;
-    @BindView(R.id.preview) TouchImageView preview;
+    //    private File file;
+    @BindView(R.id.preview)
+    TouchImageView preview;
 
     private final static String PACKAGE_WHATSAPP = "com.whatsapp";
     private final static String PACKAGE_WHATSAPP_4_B = "com.whatsapp.w4b";
@@ -42,22 +55,42 @@ public class ImageSharingActivity extends AppCompatActivity {
     private final static String PACKAGE_FACEBOOK = "com.facebook.katana";
     private final static String PACKAGE_FACEBOOK_LITE = "com.facebook.lite";
 
+    private final FirebaseStorage storage = FirebaseStorage.getInstance();
+    private final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_sharing);
         ButterKnife.bind(this);
 
-        if (getIntent() != null && getIntent().hasExtra("path")){
+        if (getIntent() != null && getIntent().hasExtra("path")) {
 
             String path = getIntent().getStringExtra("path");
 
             if (path == null) return;
 
-            uri = FileProvider.getUriForFile(this,this.getApplicationContext().getPackageName() + ".provider", new File(path));
+            File storageDir = new File(FINAL_PICTURE_DIRECTORY);
+            boolean success = true;
+            if (!storageDir.exists()) {
+                success = storageDir.mkdirs();
+            }
+            if (!success) return;
+            File file = new File(storageDir, path);
+            try {
+                if (!file.createNewFile()) return;
+            } catch (IOException e) {
+                return;
+            }
 
-            preview.setImageURI(uri);
-
+            StorageReference storageRef = storage.getReference();
+            StorageReference fileRef = storageRef.child(user.getUid()).child(path);
+            Glide.with(this).load(fileRef).into(preview);
+            fileRef.getFile(file)
+                    .addOnSuccessListener(taskSnapshot -> uri = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", file))
+                    .addOnFailureListener(exception -> {
+                        // Handle any errors
+                    });
         }
 
         if (getSupportActionBar() != null) {
@@ -76,32 +109,32 @@ public class ImageSharingActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.whatsapp)
-    void shareOnWhatsapp(){
+    void shareOnWhatsapp() {
         shareOperator(PACKAGE_WHATSAPP, "Whatsapp");
     }
 
     @OnClick(R.id.facebook)
-    void shareOnFacebook(){
+    void shareOnFacebook() {
         shareOperator(PACKAGE_FACEBOOK, "Facebook");
     }
 
     @OnClick(R.id.instagram)
-    void shareOnInsta(){
+    void shareOnInsta() {
         shareOperator(PACKAGE_INSTAGRAM, "Instagram");
     }
 
     @OnClick(R.id.twitter)
-    void shareOnTwitter(){
+    void shareOnTwitter() {
         shareOperator(PACKAGE_TWITTER, "Twitter");
     }
 
     @OnClick(R.id.snapchat)
-    void shareOnSnapchat(){
+    void shareOnSnapchat() {
         shareOperator(PACKAGE_SNAPCHAT, "Snapchat");
     }
 
     @OnClick(R.id.share)
-    void share(){
+    void share() {
 
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
@@ -113,7 +146,7 @@ public class ImageSharingActivity extends AppCompatActivity {
 
     }
 
-    private void shareOperator(String packageName, String socialMedia){
+    private void shareOperator(String packageName, String socialMedia) {
 
         if (uri == null) return;
 
@@ -130,7 +163,7 @@ public class ImageSharingActivity extends AppCompatActivity {
 
         } catch (android.content.ActivityNotFoundException ex) {
 
-            switch (packageName){
+            switch (packageName) {
 
                 case PACKAGE_TWITTER:
                     shareOperator(PACKAGE_TWITTER_LITE, "Twitter");
@@ -163,7 +196,7 @@ public class ImageSharingActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        if (item.getItemId() == R.id.action_home){
+        if (item.getItemId() == R.id.action_home) {
 
             startActivity(
                     new Intent(this, MainActivity.class)

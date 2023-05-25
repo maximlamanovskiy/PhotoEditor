@@ -67,8 +67,6 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Vi
         holder.itemPreview.setOnClickListener(view -> itemClickListener.onItemClick(position));
 
         Glide.with(context).load(path).into(holder.itemPreview);
-
-//        holder.itemPreview.setImageURI(FileProvider.getUriForFile(context,context.getPackageName() + ".provider", new File(path)));
     }
 
     public interface ItemClickListener {

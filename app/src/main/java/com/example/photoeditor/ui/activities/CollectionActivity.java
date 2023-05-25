@@ -107,11 +107,10 @@ public class CollectionActivity extends AppCompatActivity {
     private void loadItems() {
         CollectionAdapter adapter = new CollectionAdapter(this, files, position -> {
 
-//            startActivityForResult(
-//                    new Intent(CollectionActivity.this, ImageViewerActivity.class)
-//                            .putStringArrayListExtra("paths", files)
-//                            .putExtra("position", position), REQUEST_CODE);
-//            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            startActivityForResult(
+                    new Intent(CollectionActivity.this, ImageViewerActivity.class)
+                            .putExtra("position", position), REQUEST_CODE);
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
 
         });
 

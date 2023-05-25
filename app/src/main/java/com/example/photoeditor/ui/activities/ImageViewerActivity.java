@@ -15,27 +15,41 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 import androidx.viewpager.widget.ViewPager;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.material.appbar.AppBarLayout;
 import com.example.photoeditor.R;
 import com.example.photoeditor.core.adapters.ImageAdapter;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static com.example.photoeditor.core.classes.Constants.EMPTY;
+import static com.example.photoeditor.core.classes.Constants.FINAL_PICTURE_DIRECTORY;
 
 public class ImageViewerActivity extends AppCompatActivity {
+    private final FirebaseStorage storage = FirebaseStorage.getInstance();
+    private final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-    @BindView(R.id.app_bar_layout) AppBarLayout appBarLayout;
+    private List<StorageReference> files = new ArrayList<>();
 
-    @BindView(R.id.viewPager) ViewPager viewPager;
+    @BindView(R.id.app_bar_layout)
+    AppBarLayout appBarLayout;
 
-    @BindView(R.id.toolbar) Toolbar toolbar;
+    @BindView(R.id.viewPager)
+    ViewPager viewPager;
 
-    ArrayList<String> paths = new ArrayList<>();
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+
     ImageAdapter adapter;
     int currentPosition;
     int initPosition;
@@ -51,12 +65,13 @@ public class ImageViewerActivity extends AppCompatActivity {
 
         setSupportActionBar(toolbar);
 
-        if (getIntent() != null){
+        if (getIntent() != null) {
 
-            paths = getIntent().getStringArrayListExtra("paths");
+            getListOfImages();
+//            paths = getIntent().getStringArrayListExtra("paths");
             currentPosition = initPosition = getIntent().getIntExtra("position", 0);
 
-            adapter = new ImageAdapter(this, paths);
+            adapter = new ImageAdapter(this, files);
 
             viewPager.setAdapter(adapter);
             viewPager.setCurrentItem(initPosition);
@@ -87,6 +102,23 @@ public class ImageViewerActivity extends AppCompatActivity {
         }
     }
 
+    private void getListOfImages() {
+        StorageReference listRef = storage.getReference().child(user.getUid());
+
+        listRef.listAll()
+                .addOnSuccessListener(listResult -> {
+                    files.clear();
+                    files.addAll(listResult.getItems());
+                    adapter = new ImageAdapter(this, files);
+                    viewPager.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
+                    viewPager.setCurrentItem(currentPosition);
+                })
+                .addOnFailureListener(e -> {
+                    // Uh-oh, an error occurred!
+                });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.image_viewer_menu, menu);
@@ -96,7 +128,7 @@ public class ImageViewerActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
 
             case R.id.action_delete:
 
@@ -111,15 +143,35 @@ public class ImageViewerActivity extends AppCompatActivity {
 
             case R.id.action_share:
 
-                Uri uri = FileProvider.getUriForFile(this,this.getApplicationContext().getPackageName() + ".provider", new File(paths.get(currentPosition)));
+                StorageReference fileRef = files.get(currentPosition);
+                File storageDir = new File(FINAL_PICTURE_DIRECTORY);
+                boolean success = true;
+                if (!storageDir.exists()) {
+                    success = storageDir.mkdirs();
+                }
+                if (!success) break;
+                File file = new File(storageDir, fileRef.getName());
+                try {
+                    if (!file.createNewFile()) break;
+                } catch (IOException e) {
+                    break;
+                }
+                fileRef.getFile(file)
+                        .addOnSuccessListener(taskSnapshot -> {
+                            Uri uri = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", file);
+                            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                            shareIntent.setType("text/plain");
+                            shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                            shareIntent.setType("image/*");
+                            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.setType("text/plain");
-                shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
-                shareIntent.setType("image/*");
-                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            startActivity(Intent.createChooser(shareIntent, getString(R.string.share)));
+                        })
+                        .addOnFailureListener(exception -> {
+                            // Handle any errors
+                        });
 
-                startActivity(Intent.createChooser(shareIntent, getString(R.string.share)));
+//                Uri uri = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", new File(files.get(currentPosition)));
 
                 break;
 
@@ -127,42 +179,26 @@ public class ImageViewerActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void deleteItem(){
+    private void deleteItem() {
 
-        File file = new File(paths.get(currentPosition));
-
-        if (paths.size() > 1){
-
-            if (file.delete()){
-
-                viewPager.setAdapter(null);
-                paths.remove(currentPosition);
-
-                adapter = new ImageAdapter(this, paths);
-                viewPager.setAdapter(adapter);
-
-                adapter.notifyDataSetChanged();
-                currentPosition -= 1;
-
-                viewPager.setCurrentItem(currentPosition);
-
-            }else {
-                Toast.makeText(this, R.string.error_occurred, Toast.LENGTH_SHORT).show();
-            }
-
-        }else {
-
-            if (file.delete()){
-
-                finish();
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-
-            }else {
-                Toast.makeText(this, R.string.error_occurred, Toast.LENGTH_SHORT).show();
-            }
-
+        if (files.size() > 1) {
+            files.get(currentPosition).delete().addOnSuccessListener(taskSnapshot -> {
+                        viewPager.setAdapter(null);
+                        files.remove(currentPosition);
+                        adapter = new ImageAdapter(this, files);
+                        viewPager.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
+                        currentPosition -= 1;
+                        viewPager.setCurrentItem(currentPosition);
+                    })
+                    .addOnFailureListener(e -> Toast.makeText(this, R.string.error_occurred, Toast.LENGTH_SHORT).show());
+        } else {
+            files.get(currentPosition).delete().addOnSuccessListener(taskSnapshot -> {
+                        finish();
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    })
+                    .addOnFailureListener(e -> Toast.makeText(this, R.string.error_occurred, Toast.LENGTH_SHORT).show());
         }
-
     }
 
     @Override
