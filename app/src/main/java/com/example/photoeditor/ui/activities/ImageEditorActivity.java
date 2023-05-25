@@ -46,8 +46,19 @@ import com.example.photoeditor.core.libs.PhotoEditor.filters.FilterListener;
 import com.example.photoeditor.core.libs.PhotoEditor.filters.FilterViewAdapter;
 import com.example.photoeditor.core.libs.PhotoEditor.tools.EditingToolsAdapter;
 import com.example.photoeditor.core.libs.PhotoEditor.tools.ToolType;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.yalantis.ucrop.UCrop;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -56,6 +67,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
+import ja.burhanrashid52.photoeditor.OnSaveBitmap;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
 import ja.burhanrashid52.photoeditor.PhotoFilter;
@@ -80,6 +92,9 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
     private static final int CROP_REQUEST = 2;
     private static final int INFO_REQUEST = 3;
 
+    private final FirebaseStorage storage = FirebaseStorage.getInstance();
+    private final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
     private PhotoEditor mPhotoEditor;
     private PropertiesBSFragment mPropertiesBSFragment;
     private EmojiBSFragment mEmojiBSFragment;
@@ -89,11 +104,16 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
     private String currentImgPath;
     private Uri currentImgUri;
 
-    @BindView(R.id.photoEditorView) PhotoEditorView mPhotoEditorView;
-    @BindView(R.id.txtCurrentTool) TextView mTxtCurrentTool;
-    @BindView(R.id.rvConstraintTools) RecyclerView mRvTools;
-    @BindView(R.id.rvFilterView) RecyclerView mRvFilters;
-    @BindView(R.id.rootView) ConstraintLayout mRootView;
+    @BindView(R.id.photoEditorView)
+    PhotoEditorView mPhotoEditorView;
+    @BindView(R.id.txtCurrentTool)
+    TextView mTxtCurrentTool;
+    @BindView(R.id.rvConstraintTools)
+    RecyclerView mRvTools;
+    @BindView(R.id.rvFilterView)
+    RecyclerView mRvFilters;
+    @BindView(R.id.rootView)
+    ConstraintLayout mRootView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,7 +155,7 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
         getUriIntent();
     }
 
-    private void getUriIntent(){
+    private void getUriIntent() {
 
         if (getIntent() != null && getIntent().hasExtra("uriStr")) {
 
@@ -183,32 +203,34 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
     }
 
     @OnClick(R.id.imgUndo)
-    void onImgUndoClick(){
+    void onImgUndoClick() {
         mPhotoEditor.undo();
     }
 
     @OnClick(R.id.imgRedo)
-    void onImgRedoClick(){
+    void onImgRedoClick() {
         mPhotoEditor.redo();
     }
 
     @OnClick(R.id.imgSave)
-    void onImgSaveClick(){
+    void onImgSaveClick() {
         saveImage();
     }
 
     @OnClick(R.id.imgClose)
-    void onImgCloseClick(){
+    void onImgCloseClick() {
         onBackPressed();
     }
 
     @OnClick(R.id.imgCamera)
-    void onImgCameraClick(){
+    void onImgCameraClick() {
         boolean success = true;
         File storageDir = new File(TEMP_PICTURE_DIRECTORY);
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-        if (!storageDir.exists()){success = storageDir.mkdirs();}
+        if (!storageDir.exists()) {
+            success = storageDir.mkdirs();
+        }
 
         if (success) {
             File file = new File(storageDir, "temp-original.jpg");
@@ -220,7 +242,7 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
     }
 
     @OnClick(R.id.imgGallery)
-    void onImgGalleryClick(){
+    void onImgGalleryClick() {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -228,7 +250,7 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
     }
 
     @OnClick(R.id.imgCrop)
-    void onImgCropClick(){
+    void onImgCropClick() {
 
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -238,7 +260,7 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
     }
 
     @OnClick(R.id.imgInfo)
-    void onImgInfoClick(){
+    void onImgInfoClick() {
 
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, INFO_REQUEST);
 
@@ -246,55 +268,98 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
 
     @SuppressLint("MissingPermission")
     private void saveImage() {
-        if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading();
+//        if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+//            showLoading();
+//
+//            boolean success = true;
+//            File storageDir = new File(FINAL_PICTURE_DIRECTORY);
+//
+//            if (!storageDir.exists()){success = storageDir.mkdirs();}
+//
+//            if (!success) return;
+//
+//            File file = new File(storageDir, System.currentTimeMillis() + ".png");
+//            try {
+//                if (!file.createNewFile()) return;
+//
+//                SaveSettings saveSettings = new SaveSettings.Builder()
+//                        .setClearViewsEnabled(true)
+//                        .setTransparencyEnabled(true)
+//                        .build();
+//
+//                mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
+//                    @Override
+//                    public void onSuccess(@NonNull String imagePath) {
+//
+//                        hideLoading();
+//                        showSnackbar(getString(R.string.image_saving_success));
+//                        currentImgUri = Uri.fromFile(new File(imagePath));
+//
+//                        mPhotoEditorView.getSource().setImageURI(currentImgUri);
+//
+//                        startActivity(new Intent(ImageEditorActivity.this, ImageSharingActivity.class).putExtra("path", imagePath));
+//                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+//                    }
+//
+//                    @Override
+//                    public void onFailure(@NonNull Exception exception) {
+//                        hideLoading();
+//                        showSnackbar(getString(R.string.image_saving_failure));
+//                    }
+//                });
+//
+//            } catch (IOException e) {
+//
+//                e.printStackTrace();
+//                hideLoading();
+//
+//                if (e.getMessage() != null) showSnackbar(e.getMessage());
+//
+//            }
+//        }
+        showLoading();
 
-            boolean success = true;
-            File storageDir = new File(FINAL_PICTURE_DIRECTORY);
+        String fileName = System.currentTimeMillis() + ".png";
+        // Creating link to file
+        StorageReference storageRef = storage.getReference();
+        StorageReference fileRef = storageRef.child(user.getUid()).child(fileName);
 
-            if (!storageDir.exists()){success = storageDir.mkdirs();}
+        SaveSettings saveSettings = new SaveSettings.Builder()
+                .setClearViewsEnabled(true)
+                .setTransparencyEnabled(true)
+                .build();
 
-            if (!success) return;
+        mPhotoEditor.saveAsBitmap(saveSettings, new OnSaveBitmap() {
+            @Override
+            public void onBitmapReady(Bitmap saveBitmap) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                saveBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                byte[] data = baos.toByteArray();
 
-            File file = new File(storageDir, System.currentTimeMillis() + ".png");
-            try {
-                if (!file.createNewFile()) return;
-
-                SaveSettings saveSettings = new SaveSettings.Builder()
-                        .setClearViewsEnabled(true)
-                        .setTransparencyEnabled(true)
-                        .build();
-
-                mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
-                    @Override
-                    public void onSuccess(@NonNull String imagePath) {
-
-                        hideLoading();
-                        showSnackbar(getString(R.string.image_saving_success));
-                        currentImgUri = Uri.fromFile(new File(imagePath));
-
-                        mPhotoEditorView.getSource().setImageURI(currentImgUri);
-
-                        startActivity(new Intent(ImageEditorActivity.this, ImageSharingActivity.class).putExtra("path", imagePath));
-                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                UploadTask uploadTask = fileRef.putBytes(data);
+                uploadTask.continueWithTask((Continuation<UploadTask.TaskSnapshot, Task<Uri>>) task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
                     }
 
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
+                    // Continue with the task to get the download URL
+                    return fileRef.getDownloadUrl();
+                }).addOnCompleteListener((OnCompleteListener<Uri>) task -> {
+                    if (task.isSuccessful()) {
+                        startActivity(new Intent(ImageEditorActivity.this, ImageSharingActivity.class).putExtra("path", task.getResult().getPath()));
+                    } else {
                         hideLoading();
                         showSnackbar(getString(R.string.image_saving_failure));
                     }
                 });
-
-            } catch (IOException e) {
-
-                e.printStackTrace();
-                hideLoading();
-
-                if (e.getMessage() != null) showSnackbar(e.getMessage());
-
             }
-        }
+
+            @Override
+            public void onFailure(Exception e) {
+                hideLoading();
+                showSnackbar(getString(R.string.image_saving_failure));
+            }
+        });
     }
 
     @SuppressLint("MissingSuperCall")
@@ -309,7 +374,9 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
                     boolean success = true;
                     File storageDir = new File(TEMP_PICTURE_DIRECTORY);
 
-                    if (!storageDir.exists()){success = storageDir.mkdirs();}
+                    if (!storageDir.exists()) {
+                        success = storageDir.mkdirs();
+                    }
 
                     if (success) {
                         File file = new File(storageDir, "temp-original.jpg");
@@ -366,7 +433,7 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
                     break;
             }
 
-        }else if (resultCode == UCrop.RESULT_ERROR) {
+        } else if (resultCode == UCrop.RESULT_ERROR) {
 
             final Throwable cropError = UCrop.getError(data);
             if (cropError == null) return;
@@ -382,31 +449,33 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
 
         if (grantResults.length > 0) {
 
-            switch (requestCode){
+            switch (requestCode) {
 
                 case CROP_REQUEST:
                     boolean pass = true;
-                    for (int grantResult: grantResults){
-                        if (grantResult != PackageManager.PERMISSION_GRANTED){
+                    for (int grantResult : grantResults) {
+                        if (grantResult != PackageManager.PERMISSION_GRANTED) {
                             pass = false;
                         }
                     }
 
-                    if (pass){
+                    if (pass) {
                         openImageCropper();
-                    }else {
+                    } else {
                         Toast.makeText(this, R.string.permission_denied, Toast.LENGTH_SHORT).show();
                     }
                     break;
 
                 case INFO_REQUEST:
 
-                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED){ extractEXIFData(); }
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        extractEXIFData();
+                    }
 
                     break;
             }
 
-        }else {
+        } else {
             Toast.makeText(this, R.string.permission_denied, Toast.LENGTH_SHORT).show();
         }
     }
@@ -448,7 +517,7 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
         }
     }
 
-    private void openImageCropper(){
+    private void openImageCropper() {
 
         UCrop.Options options = new UCrop.Options();
 
@@ -467,7 +536,9 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
         boolean success = true;
         File storageDir = new File(TEMP_PICTURE_DIRECTORY);
 
-        if (!storageDir.exists()){success = storageDir.mkdirs();}
+        if (!storageDir.exists()) {
+            success = storageDir.mkdirs();
+        }
 
         if (success) {
             File file = new File(storageDir, "temp-cropped.jpg");
@@ -490,17 +561,19 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
 
     }
 
-    private void extractEXIFData(){
+    private void extractEXIFData() {
 
         try {
 
             String path = getPathFromUri(ImageEditorActivity.this, currentImgUri);
 
-            if (path == null) { return; }
+            if (path == null) {
+                return;
+            }
 
             showInfoDialog(ImageMetadataReader.readMetadata(new File(path)));
 
-        } catch (Exception e1){
+        } catch (Exception e1) {
             e1.printStackTrace();
 
             if (currentImgPath == null) {
@@ -531,14 +604,14 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
 
     }
 
-    private void showInfoDialog(Metadata metadata){
+    private void showInfoDialog(Metadata metadata) {
 
         StringBuilder stringBuilder = new StringBuilder();
 
         for (Directory directory : metadata.getDirectories()) {
 
             for (Tag tag : directory.getTags()) {
-                if (Arrays.asList(TAGS_NAME).contains(tag.getTagName())){
+                if (Arrays.asList(TAGS_NAME).contains(tag.getTagName())) {
 
                     stringBuilder
                             .append(tag.getTagName())
@@ -583,7 +656,7 @@ public class ImageEditorActivity extends BaseActivity implements OnPhotoEditorLi
             ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clipData = ClipData.newPlainText(getString(R.string.app_name), stringBuilder.toString());
 
-            if (clipboardManager == null){
+            if (clipboardManager == null) {
 
                 Toast.makeText(this, R.string.error_occurred, Toast.LENGTH_SHORT).show();
                 return;

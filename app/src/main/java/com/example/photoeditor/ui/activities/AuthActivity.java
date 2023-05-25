@@ -5,9 +5,7 @@ import static com.example.photoeditor.core.classes.Constants.REQUEST_CODE;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.photoeditor.R;
@@ -15,8 +13,6 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.ActionCodeSettings;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -63,7 +59,6 @@ public class AuthActivity extends AppCompatActivity {
         IdpResponse response = result.getIdpResponse();
         if (result.getResultCode() == RESULT_OK) {
             // Successfully signed in
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             startActivityForResult(new Intent(this, MainActivity.class), REQUEST_CODE);
             // ...
         } else {
@@ -79,10 +74,8 @@ public class AuthActivity extends AppCompatActivity {
         // [START auth_fui_signout]
         AuthUI.getInstance()
                 .signOut(this)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    public void onComplete(@NonNull Task<Void> task) {
-                        // ...
-                    }
+                .addOnCompleteListener(task -> {
+                    // ...
                 });
         // [END auth_fui_signout]
     }
@@ -91,11 +84,8 @@ public class AuthActivity extends AppCompatActivity {
         // [START auth_fui_delete]
         AuthUI.getInstance()
                 .delete(this)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        // ...
-                    }
+                .addOnCompleteListener(task -> {
+                    // ...
                 });
         // [END auth_fui_delete]
     }

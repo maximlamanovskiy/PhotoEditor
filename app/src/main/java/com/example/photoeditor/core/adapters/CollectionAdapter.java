@@ -11,15 +11,18 @@ import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.photoeditor.R;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.ViewHolder> {
 
     private Context context;
-    private ArrayList<String> paths;
+    private List<StorageReference> paths;
     private ItemClickListener itemClickListener;
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -33,7 +36,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Vi
 
     }
 
-    public CollectionAdapter(Context context, ArrayList<String> paths, ItemClickListener listener) {
+    public CollectionAdapter(Context context, List<StorageReference> paths, ItemClickListener listener) {
 
         this.itemClickListener = listener;
         this.context = context;
@@ -54,17 +57,18 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Vi
     @Override
     @NonNull
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_collection_item, parent,false));
+        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_collection_item, parent, false));
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        String path = paths.get(position);
+        StorageReference path = paths.get(position);
 
         holder.itemPreview.setOnClickListener(view -> itemClickListener.onItemClick(position));
 
-        holder.itemPreview.setImageURI(FileProvider.getUriForFile(context,context.getPackageName() + ".provider", new File(path)));
+        Glide.with(context).load(path).into(holder.itemPreview);
 
+//        holder.itemPreview.setImageURI(FileProvider.getUriForFile(context,context.getPackageName() + ".provider", new File(path)));
     }
 
     public interface ItemClickListener {
